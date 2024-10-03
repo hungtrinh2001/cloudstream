@@ -34,14 +34,16 @@ class FcastAction: VideoClickAction() {
     ) {
         val link = result.links.getOrNull(index ?: 0) ?: return
         val devices = FcastManager.currentDevices.toList()
-        context?.getActivity()?.showBottomDialog(
-            devices.map { it.name },
-            -1,
-            txt(R.string.player_settings_select_cast_device).asString(context),
-            false,
-            {}) {
-            val position = getViewPos(video.id)?.position
-            castTo(devices.getOrNull(it), link, position)
+        uiThread {
+            context?.getActivity()?.showBottomDialog(
+                devices.map { it.name },
+                -1,
+                txt(R.string.player_settings_select_cast_device).asString(context),
+                false,
+                {}) {
+                val position = getViewPos(video.id)?.position
+                castTo(devices.getOrNull(it), link, position)
+            }
         }
     }
 
@@ -53,7 +55,7 @@ class FcastAction: VideoClickAction() {
             session.sendMessage(
                 Opcode.Play,
                 PlayMessage(
-                    "video/*",
+                    link.type.getMimeType(),
                     link.url,
                     time = position?.let { it / 1000.0 },
                     headers = mapOf(
